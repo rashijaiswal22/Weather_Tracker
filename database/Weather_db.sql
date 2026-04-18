@@ -1,0 +1,10 @@
+CREATE DATABASE weather_db;
+USE weather_db;
+CREATE TABLE IF NOT EXISTS search_history(
+id INT AUTO_INCREMENT PRIMARY KEY,
+city VARCHAR(100),
+temp DOUBLE,
+description VARCHAR(100),
+search_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

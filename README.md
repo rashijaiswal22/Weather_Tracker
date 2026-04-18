@@ -2,6 +2,14 @@
 
 A real-time weather application built with a modern tech stack. It allows users to search for current weather conditions and automatically saves the search history in a persistent database.
 
+## 📸 Project Preview
+
+![Weather App Interface](weather_tab.png)
+![Cloud](weather_tracker.png)
+![Haze](weather_tracker_.png)
+![Clear Sky](weather__tracker.png)
+
+
 
 ## ✨ Key Features
 - **Real-time Weather Data:** Fetches live data using OpenWeatherMap API.

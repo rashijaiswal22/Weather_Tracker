@@ -33,7 +33,8 @@ function App() {
  const fetchWeather = async () => {
     if (!city || city.trim() === "") return;
 
-        try {
+    
+    try {
       // 1. Current Weather Fetch
       const response = await axios.get(`https://weather-tracker-backend-c6u1.onrender.com/api/weather/${city}`);
       

@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import java.util.Map;
-@CrossOrigin(origins="*")
+@CrossOrigin(origins="*", allowHeaders= "*")
 @RestController
 @RequestMapping("/api/weather")
 public class WeatherController {

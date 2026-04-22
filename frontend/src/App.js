@@ -19,7 +19,7 @@ function App() {
 
   const fetchHistory = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/api/weather/history");
+      const res = await axios.get("https://weather-tracker-backend-c6u1.onrender.com/api/weather/history");
       setHistory(res.data);
     } catch (err) {
       console.log("History load error");
@@ -33,16 +33,16 @@ function App() {
  const fetchWeather = async () => {
     if (!city || city.trim() === "") return;
 
-    try {
+        try {
       // 1. Current Weather Fetch
-      const response = await axios.get(`http://localhost:8081/api/weather/${city}`);
+      const response = await axios.get(`https://weather-tracker-backend-c6u1.onrender.com/api/weather/${city}`);
       
       if (response.data && !response.data.error) {
         setWeather(response.data);
         
         // 2. Forecast Data Fetch (Extra feature)
         try {
-          const forecastRes = await axios.get(`http://localhost:8081/api/weather/forecast/${city}`);
+          const forecastRes = await axios.get(`https://weather-tracker-backend-c6u1.onrender.com/api/weather/forecast/${city}`);
           setForecast(forecastRes.data);
         } catch (fErr) {
           console.log("Forecast not available");
@@ -88,7 +88,7 @@ const getBackground = () => {
   return (
     <div className="App" style={{ background: getBackground(), transition: '0.5s ease' }}>
       <div className="weather-container">
-        <h1>Weather Forecast</h1>
+        <h1>Weather Tracker</h1>
         <div className="search-box">
           <input 
             type="text" 

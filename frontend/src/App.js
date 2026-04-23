@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import './App.css';
-import HistoryList from './components/HistoryList';
-
 
 const dateBuilder = (d) => {
   let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -14,106 +12,81 @@ const dateBuilder = (d) => {
 function App() {
   const [city, setCity] = useState('');
   const [weather, setWeather] = useState(null);
-  const [forecast,setForecast] = useState(null);
+  const [forecast, setForecast] = useState(null);
   const [history, setHistory] = useState([]);
+
+  const API_BASE_URL = "https://weather-tracker-backend-c6u1.onrender.com/api/weather";
 
   const fetchHistory = async () => {
     try {
-      const res = await axios.get("https://weather-tracker-backend-c6u1.onrender.com/api/weather/history");
+      const res = await axios.get(`${API_BASE_URL}/history`);
       setHistory(res.data);
-    } catch (err) {
-      console.log("History load error");
-    }
+    } catch (err) { console.log("History error"); }
   };
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
+  useEffect(() => { fetchHistory(); }, []);
 
- const fetchWeather = async () => {
-    if (!city || city.trim() === "") return;
-
-    
+  const fetchWeather = async () => {
+    if (!city.trim()) return;
     try {
-      // 1. Current Weather Fetch
-      const response = await axios.get(`https://weather-tracker-backend-c6u1.onrender.com/api/weather/${city}`);
-      
+      // 1. Current Weather
+      const response = await axios.get(`${API_BASE_URL}/${city}`);
       if (response.data && !response.data.error) {
         setWeather(response.data);
         
-        // 2. Forecast Data Fetch (Extra feature)
+        // 2. Forecast (Method call)
         try {
-          const forecastRes = await axios.get(`https://weather-tracker-backend-c6u1.onrender.com/api/weather/forecast/${city}`);
+          const forecastRes = await axios.get(`${API_BASE_URL}/forecast/${city}`);
           setForecast(forecastRes.data);
-        } catch (fErr) {
-          console.log("Forecast not available");
-        }
+        } catch (fErr) { console.log("Forecast CORS or API error"); }
 
         fetchHistory();
         setCity('');
-      } else {
-        alert("Write City name correctly!");
-      }
-    } catch (error) {
-      console.error("Unable to show.Try after sometime");
-    }
+      } else { alert("City not found!"); }
+    } catch (error) { console.error("Network Error"); }
   };
 
-const getBackground = () => {
-    if (!weather || !weather.main) 
-      return 'linear-gradient(135deg, #7165ad, #9e9da1)';
-
-    const main = weather.weather[0].main.toLowerCase();
+  const getBackground = () => {
+    if (!weather || !weather.main) return 'linear-gradient(135deg, #7165ad, #9e9da1)';
     const temp = weather.main.temp;
-
-    // 1. Check temperature first
-    if (temp > 35) {
-        return 'linear-gradient(135deg, #ff4b1f, #ff9068)'; // Kadakti Dhoop Look
-    }
-
-    // 2. Then check these conditions
-    if (main.includes('rain')) 
-      return 'linear-gradient(135deg, #4b6cb7, #182848)';
-    if (main.includes('cloud')) 
-      return 'linear-gradient(135deg, #bdc3c7, #127bb8)';
-    if (main.includes('haze') || main.includes('mist')) 
-      return 'linear-gradient(135deg, #9b58d3, #8e9db8)';
-
-    // 3. Cold and Normal
-    if (temp < 15) 
-      return 'linear-gradient(135deg, #83a4d4, #b6fbff)';
-    
-    return 'linear-gradient(135deg, #f7b733, #fc4a1a)'; // Default Sunny
-}; 
+    if (temp > 30) return 'linear-gradient(135deg, #ff4b1f, #ff9068)';
+    if (temp < 15) return 'linear-gradient(135deg, #83a4d4, #b6fbff)';
+    return 'linear-gradient(135deg, #f7b733, #fc4a1a)';
+  };
 
   return (
-    <div className="App" style={{ background: getBackground(), transition: '0.5s ease' }}>
+    <div className="App" style={{ background: getBackground(), transition: '0.5s ease', minHeight: '100vh' }}>
       <div className="weather-container">
         <h1>Weather Tracker</h1>
         <div className="search-box">
-          <input 
-            type="text" 
-            placeholder="Enter City..." 
-            value={city} // Important
-            onChange={(e) => setCity(e.target.value)} // Important
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                fetchWeather();
-              }
-            }}
-          />
-          <button onClick={() => fetchWeather()}>Search</button>
+          <input type="text" placeholder="Enter City..." value={city} onChange={(e) => setCity(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && fetchWeather()} />
+          <button onClick={fetchWeather}>Search</button>
         </div>
 
-        {weather && weather.main ? (
+        {weather && weather.main && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="result">
             <h2>{weather.name}, {weather.sys.country}</h2>
             <div className="date">{dateBuilder(new Date())}</div>
             <div className="temp">{Math.round(weather.main.temp)}°C</div>
             <div className="description">{weather.weather[0].description}</div>
+
+            {/* --- FORECAST UI SECTION --- */}
+            {forecast && forecast.list && (
+              <div className="forecast-box">
+                <h3>5-Day Forecast</h3>
+                <div className="forecast-grid" style={{ display: 'flex', overflowX: 'auto', gap: '10px', marginTop: '20px' }}>
+                  {forecast.list.filter(f => f.dt_txt.includes("12:00:00")).map((item, index) => (
+                    <div key={index} className="forecast-item" style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '10px', minWidth: '80px' }}>
+                      <p>{new Date(item.dt_txt).toLocaleDateString('en', { weekday: 'short' })}</p>
+                      <img src={`http://openweathermap.org/img/wn/${item.weather[0].icon}.png`} alt="icon" />
+                      <p>{Math.round(item.main.temp)}°C</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
-        ) : (
-          <p>Search a city to see the magic!</p>
         )}
 
         <div className="history-sidebar">

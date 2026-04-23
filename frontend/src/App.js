@@ -14,6 +14,7 @@ function App() {
   const [weather, setWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
   const [history, setHistory] = useState([]);
+  const[loading, setLoading] = useState(false);
 
   const API_BASE_URL = "https://weather-tracker-backend-c6u1.onrender.com/api/weather";
 
@@ -27,7 +28,13 @@ function App() {
   useEffect(() => { fetchHistory(); }, []);
 
   const fetchWeather = async () => {
-    if (!city.trim()) return;
+    if (!city.trim())
+      return;
+
+    setLoading(true);
+    setWeather(null);
+    setForecast(null);
+
     try {
       // 1. Current Weather
       const response = await axios.get(`${API_BASE_URL}/${city}`);
@@ -38,12 +45,21 @@ function App() {
         try {
           const forecastRes = await axios.get(`${API_BASE_URL}/forecast/${city}`);
           setForecast(forecastRes.data);
-        } catch (fErr) { console.log("Forecast CORS or API error"); }
+        } catch (fErr) { 
+          console.log("Forecast loading error");
+       }
 
         fetchHistory();
         setCity('');
-      } else { alert("City not found!"); }
-    } catch (error) { console.error("Network Error"); }
+      } else { 
+        alert("City not found!");
+       }
+    } catch (error) { 
+      console.error("Network Error"); 
+    }
+    finally {
+      setLoading(false);
+    }
   };
 
   const getBackground = () => {
@@ -67,10 +83,19 @@ function App() {
             onChange={(e) => setCity(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchWeather()} 
           />
-          <button onClick={fetchWeather}>Search</button>
+          <button onClick={fetchWeather} disabled={loading}>{loading ? " ... " : "Search"}</button>
         </div>
 
-        {weather && weather.main ? (
+        {/* LOADING SPINNER SECTION */}
+        {loading && (
+          <div className="loader-container">
+            <div className="spinner"></div>
+            <p>Synchronizing real-time data</p>
+            <small style={{ opacity : 0.7}}>(Please wait, the server is initializing for your request.)</small>
+          </div>
+        )}
+
+        {!loading && weather && weather.main ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="result">
             <h2>{weather.name}, {weather.sys.country}</h2>
             <div className="date">{dateBuilder(new Date())}</div>
@@ -145,3 +170,4 @@ function App() {
 }
 
 export default App;
+

@@ -54,17 +54,23 @@ function App() {
     return 'linear-gradient(135deg, #f7b733, #fc4a1a)';
   };
 
-  return (
+ return (
     <div className="App" style={{ background: getBackground(), transition: '0.5s ease', minHeight: '100vh' }}>
       <div className="weather-container">
         <h1>Weather Tracker</h1>
+        
         <div className="search-box">
-          <input type="text" placeholder="Enter City..." value={city} onChange={(e) => setCity(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && fetchWeather()} />
+          <input 
+            type="text" 
+            placeholder="Enter City..." 
+            value={city} 
+            onChange={(e) => setCity(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && fetchWeather()} 
+          />
           <button onClick={fetchWeather}>Search</button>
         </div>
 
-        {weather && weather.main && (
+        {weather && weather.main ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="result">
             <h2>{weather.name}, {weather.sys.country}</h2>
             <div className="date">{dateBuilder(new Date())}</div>
@@ -73,29 +79,65 @@ function App() {
 
             {/* --- FORECAST UI SECTION --- */}
             {forecast && forecast.list && (
-              <div className="forecast-box">
-                <h3>5-Day Forecast</h3>
-                <div className="forecast-grid" style={{ display: 'flex', overflowX: 'auto', gap: '10px', marginTop: '20px' }}>
-                  {forecast.list.filter(f => f.dt_txt.includes("12:00:00")).map((item, index) => (
-                    <div key={index} className="forecast-item" style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '10px', minWidth: '80px' }}>
-                      <p>{new Date(item.dt_txt).toLocaleDateString('en', { weekday: 'short' })}</p>
-                      <img src={`http://openweathermap.org/img/wn/${item.weather[0].icon}.png`} alt="icon" />
-                      <p>{Math.round(item.main.temp)}°C</p>
-                    </div>
-                  ))}
+              <div className="forecast-section" style={{ marginTop: '30px' }}>
+                <h3 style={{ marginBottom: '15px', color: '#fff' }}>5-Day Forecast</h3>
+                <div className="forecast-grid" style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  gap: '10px', 
+                  flexWrap: 'nowrap', 
+                  alignItems: 'stretch' 
+                }}>
+                  {forecast.list
+                    .filter(item => item.dt_txt.includes("12:00:00"))
+                    .slice(0, 5)
+                    .map((item, index) => (
+                      <div 
+                        key={index} 
+                        className="forecast-card" 
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          padding: '15px',
+                          borderRadius: '15px',
+                          backdropFilter: 'blur(5px)',
+                          width: '18%',
+                          textAlign: 'center',
+                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                      >
+                        <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
+                          {new Date(item.dt_txt).toLocaleDateString('en', { weekday: 'short' })}
+                        </p>
+                        <img 
+                          src={`https://openweathermap.org/img/wn/${item.weather[0].icon}.png`} 
+                          alt="weather-icon" 
+                          style={{ width: '40px', height: '40px' }} 
+                        />
+                        <p style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{Math.round(item.main.temp)}°C</p>
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
           </motion.div>
+        ) : (
+          <p style={{ color: 'white', marginTop: '20px' }}>Search a city to see the magic!</p>
         )}
 
         <div className="history-sidebar">
           <h4>Recent Searches</h4>
-          {history.map((item) => (
-            <div key={item.id} className="history-item">
-              <span>{item.city}</span> - <span>{Math.round(item.temp)}°C</span>
-            </div>
-          ))}
+          {history.length > 0 ? (
+            history.map((item) => (
+              <div key={item.id} className="history-item">
+                <span>{item.city}</span> - <span>{Math.round(item.temp)}°C</span>
+              </div>
+            ))
+          ) : (
+            <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>No history yet</p>
+          )}
         </div>
       </div>
     </div>

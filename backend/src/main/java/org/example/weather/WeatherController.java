@@ -45,12 +45,14 @@ public class WeatherController {
     }
 
     @GetMapping("/forecast/{city}")
+    @CrossOrigin(origins = "*")
     public Object getForecast(@PathVariable String city) {
         System.out.println("Fetching Forecast for: " + city);
         String url = "https://api.openweathermap.org/data/2.5/forecast?q=" + city.trim() + "&appid=" + apiKey.trim() + "&units=metric";
         try {
             return restTemplate.getForObject(url, Map.class);
         } catch (Exception e) {
+            System.out.println("Forecast API Error: " + e.getMessage());
             return Map.of("error", "Forecast issue: " + e.getMessage());
         }
     }
